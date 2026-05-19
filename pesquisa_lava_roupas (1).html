@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pesquisa — Hábitos de Compra de Lava-Roupas</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f9f6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 2rem 2rem 2.5rem;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .brand {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a7fc1;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .progress-label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: #e8e8e8;
+      border-radius: 2px;
+      margin-bottom: 2rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #1a7fc1;
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .q-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+
+    .q-hint {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+
+    .option-grid { display: flex; flex-direction: column; gap: 8px; }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1.5px solid #e8e8e8;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+    .option:hover { border-color: #1a7fc1; background: #f0f7fd; }
+    .option.selected { border-color: #1a7fc1; background: #e6f1fb; }
+
+    .option input { display: none; }
+
+    .radio-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid #ccc;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .option.selected .radio-dot {
+      border-color: #1a7fc1;
+      background: #1a7fc1;
+    }
+
+    .radio-dot::after {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: white;
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    .option.selected .radio-dot::after { opacity: 1; }
+
+    .option-label { font-size: 14px; color: #1a1a1a; line-height: 1.4; }
+
+    .text-input {
+      width: 100%;
+      padding: 11px 14px;
+      font-size: 14px;
+      border: 1.5px solid #ddd;
+      border-radius: 10px;
+      background: #fff;
+      color: #1a1a1a;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .text-input:focus {
+      border-color: #1a7fc1;
+      box-shadow: 0 0 0 3px rgba(26,127,193,0.1);
+    }
+
+    .text-input.error { border-color: #e24b4a; }
+
+    .error-msg {
+      font-size: 12px;
+      color: #e24b4a;
+      margin-top: 6px;
+      display: none;
+    }
+
+    .error-msg.show { display: block; }
+
+    .nav {
+      display: flex;
+      gap: 8px;
+      margin-top: 1.75rem;
+    }
+
+    .btn-back {
+      flex: 1;
+      padding: 11px;
+      font-size: 14px;
+      background: #f5f5f5;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #666;
+      font-family: inherit;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    .btn-back:hover { background: #ebebeb; }
+
+    .btn-next {
+      flex: 2;
+      padding: 11px;
+      font-size: 14px;
+      background: #1a7fc1;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+
+    .btn-next:hover { background: #155f96; }
+
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 2.5rem 1rem;
+    }
+
+    .success-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #e1f5ee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+    }
+
+    .success-icon svg { width: 28px; height: 28px; stroke: #0f6e56; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+    .success-title { font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
+    .success-sub { font-size: 14px; color: #888; line-height: 1.6; }
+
+    .coupon-box {
+      background: linear-gradient(135deg, #fff8e1, #fff3cd);
+      border: 2px dashed #f5a623;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      text-align: center;
+      margin: 1.25rem 0;
+    }
+    .coupon-label { font-size: 12px; font-weight: 600; color: #b07d1a; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+    .coupon-code { font-size: 28px; font-weight: 800; color: #1a1a1a; letter-spacing: 0.1em; }
+    .coupon-desc { font-size: 13px; color: #888; margin-top: 4px; }
+
+    .btn-redirect {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      background: #e63027;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      text-align: center;
+      margin-top: 1.25rem;
+      transition: background 0.15s;
+    }
+    .btn-redirect:hover { background: #c4251d; }
+
+    .input-label { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; display: block; }
+    .input-required { color: #e24b4a; }
+    .input-note { font-size: 11px; color: #aaa; margin-top: 6px; }
+    .input-group { margin-bottom: 1rem; }
+
+    @media (max-width: 480px) {
+      .card { padding: 1.5rem 1.25rem 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <p class="brand">Pesquisa de Mercado</p>
+
+  <div id="form-area">
+    <p class="progress-label" id="prog-label">Pergunta 1 de 5</p>
+    <div class="progress-bar">
+      <div class="progress-fill" id="prog-fill" style="width: 16.6%"></div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step active" id="step-1">
+      <p class="q-title">Com que frequência você usa cada tipo de lava-roupas?</p>
+      <p class="q-hint">Selecione a opção que melhor descreve seu uso habitual.</p>
+      <div class="option-grid">
+        <label class="option"><input type="radio" name="q1" value="apenas_liquido"><span class="radio-dot"></span><span class="option-label">Apenas líquido</span></label>
+        <label class="option"><input type="radio" name="q1" value="mais_liquido"><span class="radio-dot"></span><span class="option-label">Uso mais líquido do que pó</span></label>
+        <label class="option"><input type="radio" name="q1" value="mais_po"><span class="radio-dot"></span><span class="option-label">Uso mais pó do que líquido</span></label>
+        <label class="option"><input type="radio" name="q1" value="apenas_po"><span class="radio-dot"></span><span class="option-label">Apenas pó</span></label>
+      </div>
+      <p class="error-msg" id="err1">Por favor, selecione uma opção para continuar.</p>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step" id="step-2">
+      <p class="q-title">Qual é o principal fator na escolha do seu lava-roupas líquido?</p>
+      <p class="q-hint">Escolha o fator mais importante para você.</p>
+      <div class="option-grid">
+        <label class="option"><input type="radio" name="q2" value="preco_promocao"><span class="radio-dot"></span><span class="option-label">Preço / promoção</span></label>
+        <label class="option"><input type="radio" name="q2" value="marca_conhecida"><span class="radio-dot"></span><span class="option-label">Marca conhecida</span></label>
+        <label class="option"><input type="radio" name="q2" value="custo_beneficio"><span class="radio-dot"></span><span class="option-label">Custo-benefício</span></label>
+        <label class="option"><input type="radio" name="q2" value="perfume_rendimento"><span class="radio-dot"></span><span class="option-label">Perfume / rendimento</span></label>
+      </div>
+      <p class="error-msg" id="err2">Por favor, selecione uma opção para continuar.</p>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step" id="step-3">
+      <p class="q-title">O que você mais valoriza em um lava-roupas líquido?</p>
+      <p class="q-hint">Pode diferir do fator de compra — queremos saber o que é mais importante na prática.</p>
+      <div class="option-grid">
+        <label class="option"><input type="radio" name="q3" value="preco"><span class="radio-dot"></span><span class="option-label">Preço acessível</span></label>
+        <label class="option"><input type="radio" name="q3" value="rendimento"><span class="radio-dot"></span><span class="option-label">Rendimento (rende mais lavagens)</span></label>
+        <label class="option"><input type="radio" name="q3" value="limpeza"><span class="radio-dot"></span><span class="option-label">Qualidade da limpeza</span></label>
+        <label class="option"><input type="radio" name="q3" value="marca"><span class="radio-dot"></span><span class="option-label">Confiança na marca</span></label>
+      </div>
+      <p class="error-msg" id="err3">Por favor, selecione uma opção para continuar.</p>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step" id="step-4">
+      <p class="q-title">Qual foi a última marca de lava-roupas líquido que você comprou?</p>
+      <p class="q-hint">Digite o nome da marca.</p>
+      <input class="text-input" type="text" id="q4" placeholder="Ex.: Ypê, OMO, Ariel…" autocomplete="off">
+      <p class="error-msg" id="err4">Por favor, informe a marca.</p>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step" id="step-5">
+      <p class="q-title">O que faria você trocar de marca?</p>
+      <p class="q-hint">Selecione o principal motivo.</p>
+      <div class="option-grid">
+        <label class="option"><input type="radio" name="q5" value="promocao"><span class="radio-dot"></span><span class="option-label">Uma boa promoção</span></label>
+        <label class="option"><input type="radio" name="q5" value="indicacao"><span class="radio-dot"></span><span class="option-label">Indicação de alguém de confiança</span></label>
+        <label class="option"><input type="radio" name="q5" value="rendimento"><span class="radio-dot"></span><span class="option-label">Melhor rendimento comprovado</span></label>
+        <label class="option"><input type="radio" name="q5" value="indisponibilidade"><span class="radio-dot"></span><span class="option-label">Indisponibilidade da marca habitual</span></label>
+      </div>
+      <p class="error-msg" id="err5-radio">Por favor, selecione uma opção.</p>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step" id="step-6">
+      <p class="q-title">Quase lá! Informe seus dados para receber o desconto 🎉</p>
+      <p class="q-hint">Preencha abaixo para garantir seu cupom exclusivo.</p>
+
+      <div class="input-group">
+        <label class="input-label" for="q6-nome">Seu nome <span class="input-required">*</span></label>
+        <input class="text-input" type="text" id="q6-nome" placeholder="Como você se chama?" autocomplete="given-name">
+        <p class="error-msg" id="err6-nome">Por favor, informe seu nome.</p>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="q6-email">Seu e-mail <span class="input-required">*</span></label>
+        <input class="text-input" type="email" id="q6-email" placeholder="seuemail@exemplo.com" autocomplete="email">
+        <p class="error-msg" id="err6-email">Informe um e-mail válido.</p>
+        <p class="input-note">Prometemos não usar suas informações para SPAM.</p>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="btn-back" id="btn-back" style="display:none" onclick="goBack()">← Voltar</button>
+      <button class="btn-next" id="btn-next" onclick="goNext()">Próxima →</button>
+    </div>
+  </div>
+
+  <!-- Sucesso -->
+  <div class="success-screen" id="success">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <p class="success-title">Parabéns, <span id="nome-exibido"></span>! 🎉</p>
+    <p class="success-sub" style="margin-bottom: 1.25rem;">Você completou a pesquisa e ganhou um cupom exclusivo de <strong>10% de desconto</strong> em OMO no Mateus Mais!</p>
+
+    <div class="coupon-box">
+      <p class="coupon-label">Seu cupom de desconto</p>
+      <p class="coupon-code">OMO10</p>
+      <p class="coupon-desc">10% off em OMO • válido no Mateus Mais</p>
+    </div>
+
+    <a class="btn-redirect" href="https://mateusmais.com.br/" id="btn-ir" target="_blank">
+      Ir para o Mateus Mais →
+    </a>
+
+    <p style="font-size: 11px; color: #bbb; margin-top: 1rem;">Você será redirecionado automaticamente em <span id="countdown">5</span>s</p>
+  </div>
+</div>
+
+<script>
+  let current = 1;
+  const total = 6;
+
+  document.querySelectorAll('.option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const name = opt.querySelector('input').getAttribute('name');
+      document.querySelectorAll('input[name="' + name + '"]').forEach(i => {
+        i.closest('.option').classList.remove('selected');
+      });
+      opt.classList.add('selected');
+      opt.querySelector('input').checked = true;
+    });
+  });
+
+  function validate() {
+    if (current === 1) {
+      const v = document.querySelector('input[name="q1"]:checked');
+      document.getElementById('err1').classList.toggle('show', !v);
+      return !!v;
+    }
+    if (current === 2) {
+      const v = document.querySelector('input[name="q2"]:checked');
+      document.getElementById('err2').classList.toggle('show', !v);
+      return !!v;
+    }
+    if (current === 3) {
+      const v = document.querySelector('input[name="q3"]:checked');
+      document.getElementById('err3').classList.toggle('show', !v);
+      return !!v;
+    }
+    if (current === 4) {
+      const v = document.getElementById('q4').value.trim();
+      document.getElementById('err4').classList.toggle('show', !v);
+      document.getElementById('q4').classList.toggle('error', !v);
+      return !!v;
+    }
+    if (current === 5) {
+      const r = document.querySelector('input[name="q5"]:checked');
+      document.getElementById('err5-radio').classList.toggle('show', !r);
+      return !!r;
+    }
+    if (current === 6) {
+      const nome = document.getElementById('q6-nome').value.trim();
+      const email = document.getElementById('q6-email').value.trim();
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      document.getElementById('err6-nome').classList.toggle('show', !nome);
+      document.getElementById('q6-nome').classList.toggle('error', !nome);
+      document.getElementById('err6-email').classList.toggle('show', !emailOk);
+      document.getElementById('q6-email').classList.toggle('error', !emailOk);
+      return !!nome && emailOk;
+    }
+    return true;
+  }
+
+  function goNext() {
+    if (!validate()) return;
+    if (current < total) {
+      document.getElementById('step-' + current).classList.remove('active');
+      current++;
+      document.getElementById('step-' + current).classList.add('active');
+      updateUI();
+    } else {
+      const primeiroNome = document.getElementById('q6-nome').value.trim().split(' ')[0];
+      document.getElementById('nome-exibido').textContent = primeiroNome;
+      document.getElementById('form-area').style.display = 'none';
+      document.getElementById('success').style.display = 'block';
+      startCountdown();
+    }
+  }
+
+  function goBack() {
+    if (current > 1) {
+      document.getElementById('step-' + current).classList.remove('active');
+      current--;
+      document.getElementById('step-' + current).classList.add('active');
+      updateUI();
+    }
+  }
+
+  function updateUI() {
+    const pct = (current / total) * 100;
+    document.getElementById('prog-fill').style.width = pct + '%';
+    if (current <= 5) {
+      document.getElementById('prog-label').textContent = 'Pergunta ' + current + ' de 5';
+    } else {
+      document.getElementById('prog-label').textContent = 'Última etapa!';
+    }
+    document.getElementById('btn-back').style.display = current > 1 ? 'block' : 'none';
+    document.getElementById('btn-next').textContent = current === total ? 'Garantir meu desconto 🎉' : 'Próxima →';
+  }
+
+  function startCountdown() {
+    let sec = 5;
+    const el = document.getElementById('countdown');
+    const interval = setInterval(() => {
+      sec--;
+      if (el) el.textContent = sec;
+      if (sec <= 0) {
+        clearInterval(interval);
+        window.open('https://mateusmais.com.br/', '_blank');
+      }
+    }, 1000);
+  }
+</script>
+
+</body>
+</html>
